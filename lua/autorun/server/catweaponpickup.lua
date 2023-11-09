@@ -18,14 +18,14 @@ hook.Add("PlayerCanPickupWeapon", "CATManualPickup", function(ply, wep)
         ply:GiveAmmo(wep.StoredAmmo, wep:GetPrimaryAmmoType(), true)
         wep.StoredAmmo = 0
     end
-    return !(ply:HasWeapon(wep:GetClass()) or (wep.StoredAmmo != nil))
+    return !(ply:HasWeapon(wep:GetClass()) or !wep.Spawnable)
 end)
 
 hook.Add("WeaponEquip", "CATManualPickup", function(wep, ply)
     if wep.StoredAmmo and wep.StoredAmmo > 0 then
         ply:GiveAmmo(wep.StoredAmmo, wep:GetPrimaryAmmoType(), true)
     end
-    wep.StoredAmmo = 0
+    wep.Spawnable = false
 end)
 
 hook.Add("AllowPlayerPickup", "CATManualPickup", function(ply, ent)
