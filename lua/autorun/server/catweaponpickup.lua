@@ -1,7 +1,7 @@
 util.AddNetworkString("catpickup")
 
 hook.Add("OnEntityCreated", "CATManualPickup", function(ent)
-	if ent:IsWeapon() then timer.Simple(0, function() ent.StoredAmmo = 0 end) end
+	if ent:IsWeapon() then timer.Simple(0, function() ent.StoredAmmo = 0 ent.Spawnable = false end) end
 end)
 
 hook.Add("PlayerDroppedWeapon", "CATManualPickup", function(ply, wep)
@@ -18,7 +18,7 @@ hook.Add("PlayerCanPickupWeapon", "CATManualPickup", function(ply, wep)
         ply:GiveAmmo(wep.StoredAmmo, wep:GetPrimaryAmmoType(), true)
         wep.StoredAmmo = 0
     end
-    return !(ply:HasWeapon(wep:GetClass()) or !wep.Spawnable)
+    return !(ply:HasWeapon(wep:GetClass()) or (!wep.Spawnable))
 end)
 
 hook.Add("WeaponEquip", "CATManualPickup", function(wep, ply)
@@ -29,7 +29,7 @@ hook.Add("WeaponEquip", "CATManualPickup", function(wep, ply)
 end)
 
 hook.Add("AllowPlayerPickup", "CATManualPickup", function(ply, ent)
-    return ent.StoredAmmo
+    return ent.Spawnable
 end)
 
 hook.Add("KeyPress", "CATManualPickup", function(ply, key)
