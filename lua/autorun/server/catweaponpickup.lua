@@ -30,7 +30,9 @@ hook.Add("WeaponEquip", "CATManualPickup", function(wep, ply)
 end)
 
 hook.Add("AllowPlayerPickup", "CATManualPickup", function(ply, ent)
-    return ent:IsWeapon() and ent.Spawnable
+    if ent:IsWeapon() then
+        return ent.Spawnable
+    end
 end)
 
 hook.Add("KeyPress", "CATManualPickup", function(ply, key)
