@@ -26,6 +26,9 @@ hook.Add("PlayerCanPickupWeapon", "CATManualPickup", function(ply, wep)
     if !used or ply.PickedUpWeapon then return wep.Spawnable end
     local isconsumable = IsValid(getwep) and (getwep:GetMaxClip1() < 0 and getwep:GetPrimaryAmmoType() != -1)
     if haswep and !isconsumable then
+        if getwep == ply:GetActiveWeapon() and ply:GetPreviousWeapon():IsValid() then
+            ply:SelectWeapon(ply:GetPreviousWeapon())
+        end
         ply:DropWeapon(getwep)
         getwep:SetPos(wep:GetPos() + vector_up)
         getwep:SetAngles(wep:GetAngles())
@@ -40,7 +43,7 @@ hook.Add("PlayerCanPickupWeapon", "CATManualPickup", function(ply, wep)
         timer.Simple(0, function() if !IsValid(wep) then return end ply:SelectWeapon(wep) end)
     end
     ply.PickedUpWeapon = true
-    timer.Simple(0.25, function() ply.PickedUpWeapon = false end)
+    timer.Simple(0, function() ply.PickedUpWeapon = false end)
     -- return !(wep:GetMaxClip1() < 0 and wep:GetPrimaryAmmoType() != -1)
 end)
 
