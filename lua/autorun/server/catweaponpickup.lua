@@ -18,7 +18,6 @@ hook.Add("PlayerCanPickupWeapon", "CATManualPickup", function(ply, wep)
     local class = wep:GetClass()
     local haswep, getwep = ply:HasWeapon(class), ply:GetWeapon(class)
     if haswep and wep.StoredAmmo and wep.StoredAmmo > 0 then
-        print(wep.StoredAmmo)
         ply:GiveAmmo(wep.StoredAmmo, wep:GetPrimaryAmmoType(), false)
         wep.StoredAmmo = 0
     end
