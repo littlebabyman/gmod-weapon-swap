@@ -40,7 +40,11 @@ hook.Add("PlayerCanPickupWeapon", "CATManualPickup", function(ply, wep)
         DropEntityIfHeld(getwep)
     end
     if !haswep or !isconsumable then
-        timer.Simple(0, function() if !IsValid(wep) then return end ply:SelectWeapon(wep) end)
+        timer.Simple(0, function()
+            if !IsValid(wep) then return end
+            if wep:GetOwner() != ply then ply:PickupWeapon(wep) end
+            ply:SelectWeapon(wep)
+        end)
     end
     ply.PickedUpWeapon = true
     timer.Simple(0, function() ply.PickedUpWeapon = false end)
