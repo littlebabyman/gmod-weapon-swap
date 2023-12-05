@@ -15,11 +15,33 @@ hook.Add("PlayerDroppedWeapon", "CATManualPickup", function(ply, wep)
 end)
 
 hook.Add("PlayerCanPickupWeapon", "CATManualPickup", function(ply, wep)
-    if ply:HasWeapon(wep:GetClass()) and wep.StoredAmmo and wep.StoredAmmo > 0 then
-        ply:GiveAmmo(wep.StoredAmmo, wep:GetPrimaryAmmoType(), true)
+    local class = wep:GetClass()
+    local haswep, getwep = ply:HasWeapon(class), ply:GetWeapon(class)
+    if haswep and wep.StoredAmmo and wep.StoredAmmo > 0 then
+        print(wep.StoredAmmo)
+        ply:GiveAmmo(wep.StoredAmmo, wep:GetPrimaryAmmoType(), false)
         wep.StoredAmmo = 0
     end
-    return !(ply:HasWeapon(wep:GetClass()) and !(wep:GetMaxClip1() < 0 and wep:GetPrimaryAmmoType() != -1) or (!wep.Spawnable))
+    local used = ply:KeyPressed(IN_USE)
+    if !used or ply.PickedUpWeapon then return wep.Spawnable end
+    local isconsumable = IsValid(getwep) and (getwep:GetMaxClip1() < 0 and getwep:GetPrimaryAmmoType() != -1)
+    if haswep and !isconsumable then
+        ply:DropWeapon(getwep)
+        getwep:SetPos(wep:GetPos() + vector_up)
+        getwep:SetAngles(wep:GetAngles())
+        if IsValid(getwep:GetPhysicsObject()) then
+            getwep:GetPhysicsObject():SetVelocityInstantaneous(vector_origin)
+        else
+            getwep:SetVelocity(-getwep:GetVelocity())
+        end
+        DropEntityIfHeld(getwep)
+    end
+    if !haswep or !isconsumable then
+        timer.Simple(0, function() if !IsValid(wep) then return end ply:SelectWeapon(wep) end)
+    end
+    ply.PickedUpWeapon = true
+    timer.Simple(0.25, function() ply.PickedUpWeapon = false end)
+    -- return !(wep:GetMaxClip1() < 0 and wep:GetPrimaryAmmoType() != -1)
 end)
 
 hook.Add("WeaponEquip", "CATManualPickup", function(wep, ply)
@@ -27,34 +49,4 @@ hook.Add("WeaponEquip", "CATManualPickup", function(wep, ply)
         ply:GiveAmmo(wep.StoredAmmo, wep:GetPrimaryAmmoType(), true)
     end
     wep.Spawnable = false
-end)
-
-hook.Add("AllowPlayerPickup", "CATManualPickup", function(ply, ent)
-    if ent:IsWeapon() then
-        return ent.Spawnable
-    end
-end)
-
-hook.Add("KeyPress", "CATManualPickup", function(ply, key)
-    if SERVER and key == IN_USE then
-        local ent = ply:GetUseEntity()
-        if ent:IsWeapon() and ent:GetPhysicsObject():IsAsleep() then
-            local wep = ply:GetWeapon(ent:GetClass())
-            local isconsumable = IsValid(wep) and (wep:GetMaxClip1() < 0 and wep:GetPrimaryAmmoType() != -1)
-            if ply:HasWeapon(ent:GetClass()) and !isconsumable then
-                if wep == ply:GetActiveWeapon() and ply:GetPreviousWeapon():IsValid() then
-                    ply:SelectWeapon(ply:GetPreviousWeapon())
-                end
-                ply:DropWeapon(wep)
-                wep:SetPos(ent:GetPos() + vector_up)
-                wep:SetAngles(ent:GetAngles())
-                wep:GetPhysicsObject():SetVelocityInstantaneous(vector_origin)
-                DropEntityIfHeld(wep)
-            end
-            ply:PickupWeapon(ent, isconsumable)
-            if !isconsumable then
-                ply:SelectWeapon(ent)
-            end
-        end
-    end
 end)
