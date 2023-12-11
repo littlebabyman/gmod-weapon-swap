@@ -1,7 +1,17 @@
 util.AddNetworkString("catpickup")
 
+local enableweapon = CreateConVar("catpickup_weapons", "1", {FCVAR_REPLICATED+FCVAR_ARCHIVE}, "Enable picking up weapons manually.", 0, 1)
+local enableitem = CreateConVar("catpickup_items", "1", {FCVAR_REPLICATED+FCVAR_ARCHIVE}, "Enable picking up other items manually.", 0, 1)
+
 hook.Add("OnEntityCreated", "CATManualPickup", function(ent)
-    if ent:IsWeapon() then ent.Spawnable = true timer.Simple(0, function() if !IsValid(ent) then return end ent.StoredAmmo = 0 ent.Spawnable = false end) end
+    if (ent:IsWeapon() and enableweapon:GetBool()) or (!ent:IsWeapon() and enableitem:GetBool()) then
+        ent.Spawnable = true
+        timer.Simple(0, function()
+            if !IsValid(ent) then return end
+            if ent:IsWeapon() then ent.StoredAmmo = 0 end
+            ent.Spawnable = false
+        end)
+    end
 end)
 
 hook.Add("PlayerDroppedWeapon", "CATManualPickup", function(ply, wep)
@@ -14,15 +24,24 @@ hook.Add("PlayerDroppedWeapon", "CATManualPickup", function(ply, wep)
     end
 end)
 
+hook.Add("PlayerCanPickupItem", "CATManualPickup", function(ply, item)
+    if !enableitem:GetBool() then return end
+    local used = !ply:KeyDown(IN_WALK) and ply:KeyDown(IN_USE) and !ply:KeyDownLast(IN_USE)
+    if !used or ply.PickedUpItem then return item.Spawnable end
+    ply.PickedUpItem = true
+    timer.Simple(0, function() ply.PickedUpItem = false end)
+end)
+
 hook.Add("PlayerCanPickupWeapon", "CATManualPickup", function(ply, wep)
+    if !enableweapon:GetBool() then return end
     local class = wep:GetClass()
     local haswep, getwep = ply:HasWeapon(class), ply:GetWeapon(class)
     if haswep and wep.StoredAmmo and wep.StoredAmmo > 0 then
         ply:GiveAmmo(wep.StoredAmmo, wep:GetPrimaryAmmoType(), false)
         wep.StoredAmmo = 0
     end
-    local used = ply:KeyPressed(IN_USE)
-    if !used or ply.PickedUpWeapon then return wep.Spawnable end
+    local used = !ply:KeyDown(IN_WALK) and ply:KeyPressed(IN_USE)
+    if !used or ply.PickedUpItem then return wep.Spawnable end
     local isconsumable = IsValid(getwep) and (getwep:GetMaxClip1() < 0 and getwep:GetPrimaryAmmoType() != -1)
     if haswep and !isconsumable then
         if getwep == ply:GetActiveWeapon() and ply:GetPreviousWeapon():IsValid() then
@@ -36,7 +55,7 @@ hook.Add("PlayerCanPickupWeapon", "CATManualPickup", function(ply, wep)
         else
             getwep:SetVelocity(-getwep:GetVelocity())
         end
-        DropEntityIfHeld(getwep)
+        ply:DropObject()
     end
     if !haswep or !isconsumable then
         timer.Simple(0, function()
@@ -45,8 +64,8 @@ hook.Add("PlayerCanPickupWeapon", "CATManualPickup", function(ply, wep)
             ply:SelectWeapon(wep)
         end)
     end
-    ply.PickedUpWeapon = true
-    timer.Simple(0, function() ply.PickedUpWeapon = false end)
+    ply.PickedUpItem = true
+    timer.Simple(0, function() ply.PickedUpItem = false end)
     -- return !(wep:GetMaxClip1() < 0 and wep:GetPrimaryAmmoType() != -1)
 end)
 
@@ -55,4 +74,14 @@ hook.Add("WeaponEquip", "CATManualPickup", function(wep, ply)
         ply:GiveAmmo(wep.StoredAmmo, wep:GetPrimaryAmmoType(), true)
     end
     wep.Spawnable = false
+end)
+
+hook.Add("AllowPlayerPickup", "CATManualPickup", function(ply, ent)
+    local walking = ply:KeyDown(IN_WALK)
+    if (ent:IsWeapon() and enableweapon:GetBool()) then
+        return walking
+    end
+    if (ent:GetClass():find("prop") == nil and enableitem:GetBool()) then
+        return walking
+    end
 end)
