@@ -40,7 +40,7 @@ hook.Add("PlayerCanPickupWeapon", "CATManualPickup", function(ply, wep)
         ply:GiveAmmo(wep.StoredAmmo, wep:GetPrimaryAmmoType(), false)
         wep.StoredAmmo = 0
     end
-    local used = !ply:KeyDown(IN_WALK) and ply:KeyPressed(IN_USE)
+    local used = !ply:KeyDown(IN_WALK) and ply:KeyDown(IN_USE) and !ply:KeyDownLast(IN_USE)
     if !used or ply.PickedUpItem then return wep.Spawnable end
     local tr = {}
     tr.start = ply:EyePos()
