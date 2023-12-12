@@ -2,6 +2,7 @@ util.AddNetworkString("catpickup")
 
 local enableweapon = CreateConVar("catpickup_weapons", "1", {FCVAR_REPLICATED+FCVAR_ARCHIVE}, "Enable picking up weapons manually.", 0, 1)
 local enableitem = CreateConVar("catpickup_items", "1", {FCVAR_REPLICATED+FCVAR_ARCHIVE}, "Enable picking up other items manually.", 0, 1)
+local weaponwipe = CreateConVar("catpickup_clearweapons", "0", {FCVAR_REPLICATED+FCVAR_ARCHIVE}, "Clear weapons dropped by NPCs and players.", 0)
 
 hook.Add("OnEntityCreated", "CATManualPickup", function(ent)
     if (ent:IsWeapon() and enableweapon:GetBool()) or (!ent:IsWeapon() and enableitem:GetBool()) then
@@ -21,6 +22,13 @@ hook.Add("PlayerDroppedWeapon", "CATManualPickup", function(ply, wep)
         ply:RemoveAmmo(wep.StoredAmmo, wep:GetPrimaryAmmoType())
     else
         wep.StoredAmmo = wep:GetMaxClip1()
+    end
+    if weaponwipe:GetBool() then
+        timer.Create("CATPickupWep" .. wep:EntIndex(), weaponwipe:GetInt() or 60, 1, function()
+            if !IsValid(wep) or !timer.Exists("CATPickupWep" .. wep:EntIndex()) then return end
+            wep:Remove()
+            timer.Remove("CATPickupWep" .. wep:EntIndex())
+        end)
     end
 end)
 
@@ -75,6 +83,7 @@ hook.Add("PlayerCanPickupWeapon", "CATManualPickup", function(ply, wep)
 end)
 
 hook.Add("WeaponEquip", "CATManualPickup", function(wep, ply)
+    if timer.Exists("CATPickupWep" .. wep:EntIndex()) then timer.Remove("CATPickupWep" .. wep:EntIndex()) end
     if wep.StoredAmmo and wep.StoredAmmo > 0 then
         ply:GiveAmmo(wep.StoredAmmo, wep:GetPrimaryAmmoType(), true)
     end
