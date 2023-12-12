@@ -2,7 +2,7 @@ util.AddNetworkString("catpickup")
 
 local enableweapon = CreateConVar("catpickup_weapons", "1", {FCVAR_REPLICATED+FCVAR_ARCHIVE}, "Enable picking up weapons manually.", 0, 1)
 local enableitem = CreateConVar("catpickup_items", "1", {FCVAR_REPLICATED+FCVAR_ARCHIVE}, "Enable picking up other items manually.", 0, 1)
-local weaponwipe = CreateConVar("catpickup_clearweapons", "0", {FCVAR_REPLICATED+FCVAR_ARCHIVE}, "Clear weapons dropped by NPCs and players.", 0)
+local weaponwipe = CreateConVar("catpickup_clearweapons", "0", {FCVAR_REPLICATED+FCVAR_ARCHIVE}, "Clear weapons dropped by NPCs and players, after set amount of seconds. 0 deactivates this setting.", 0)
 
 hook.Add("OnEntityCreated", "CATManualPickup", function(ent)
     if (ent:IsWeapon() and enableweapon:GetBool()) or (!ent:IsWeapon() and enableitem:GetBool()) then
