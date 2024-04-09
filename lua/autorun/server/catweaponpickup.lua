@@ -49,12 +49,13 @@ hook.Add("PlayerCanPickupWeapon", "CATManualPickup", function(ply, wep)
         wep.StoredAmmo = 0
     end
     local used = !ply:KeyDown(IN_WALK) and ply:KeyDown(IN_USE) and !ply:KeyDownLast(IN_USE)
+    if !ply:VisibleVec(wep:WorldSpaceCenter()) then return end
     if !used or ply.PickedUpItem then return wep.Spawnable end
-    local tr = {}
-    tr.start = ply:EyePos()
-    tr.endpos = wep:WorldSpaceCenter()
-    tr.filter = {ply, wep}
-    if util.TraceLine(tr).Hit then return end
+    -- local tr = {}
+    -- tr.start = ply:EyePos()
+    -- tr.endpos = wep:WorldSpaceCenter()
+    -- tr.filter = {ply, wep}
+    -- if util.TraceLine(tr).Hit then return end
     local isconsumable = IsValid(getwep) and (getwep:GetMaxClip1() < 0 and getwep:GetPrimaryAmmoType() != -1)
     if haswep and !isconsumable then
         if getwep == ply:GetActiveWeapon() and ply:GetPreviousWeapon():IsValid() then
