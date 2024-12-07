@@ -96,7 +96,7 @@ hook.Add("AllowPlayerPickup", "CATManualPickup", function(ply, ent)
     if (ent:IsWeapon() and enableweapon:GetBool()) then
         return walking
     end
-    if (ent:GetClass():find("prop") == nil and enableitem:GetBool()) then
+    if ((ent:GetClass():find("prop") or ent:GetClass():find("phys")) == nil and enableitem:GetBool()) then
         return walking
     end
 end)
