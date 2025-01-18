@@ -42,7 +42,7 @@ end)
 
 hook.Add("PlayerCanPickupWeapon", "CATManualPickup", function(ply, wep)
     if !enableweapon:GetBool() then return end
-    local class = wep:GetClass()
+    local class, autoswitch = wep:GetClass(), ply:GetInfoNum("cl_autowepswitch", 1) == 1
     local haswep, getwep = ply:HasWeapon(class), ply:GetWeapon(class)
     if haswep and wep.StoredAmmo and wep.StoredAmmo > 0 then
         ply:GiveAmmo(wep.StoredAmmo, wep:GetPrimaryAmmoType(), false)
@@ -58,7 +58,7 @@ hook.Add("PlayerCanPickupWeapon", "CATManualPickup", function(ply, wep)
     -- if util.TraceLine(tr).Hit then return end
     local isconsumable = IsValid(getwep) and (getwep:GetMaxClip1() < 0 and getwep:GetPrimaryAmmoType() != -1)
     if haswep and !isconsumable then
-        if getwep == ply:GetActiveWeapon() and ply:GetPreviousWeapon():IsValid() then
+        if autoswitch and getwep == ply:GetActiveWeapon() and ply:GetPreviousWeapon():IsValid() then
             ply:SelectWeapon(ply:GetPreviousWeapon())
         end
         ply:DropWeapon(getwep)
@@ -75,6 +75,7 @@ hook.Add("PlayerCanPickupWeapon", "CATManualPickup", function(ply, wep)
         timer.Simple(0, function()
             if !IsValid(wep) then return end
             if wep:GetOwner() != ply then ply:PickupWeapon(wep) end
+            if !autoswitch then return end
             ply:SelectWeapon(wep)
         end)
     end

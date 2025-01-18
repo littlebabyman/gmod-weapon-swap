@@ -12,6 +12,6 @@ hook.Add("PopulateToolMenu", "CATManualPickup", function()
 	end)
 end)
 
-hook.Add("Tick", "CATManualPickup", function()
+-- hook.Add("Tick", "CATManualPickup", function()
 	-- print("hi")
-end)
+-- end)
