@@ -8,7 +8,7 @@ hook.Add("PopulateToolMenu", "CATManualPickup", function()
 		sv:CheckBox("Manually pick up weapons", "catpickup_weapons")
 		sv:CheckBox("Manually pick up ammo and items", "catpickup_items")
 		sv:NumSlider("Weapon auto-clear time", "catpickup_clearweapons", 0, 600, 1)
-		sv:ControlHelp("Automatically clear dropped weapons after # seconds. 0 to not clear.")
+		sv:ControlHelp("Automatically clear dropped weapons after # seconds.\n0 to not clear.")
 	end)
 end)
 
